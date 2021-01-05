@@ -1,0 +1,16 @@
+{
+    "name": "zaidb/mvc-boilerplate",
+    "description": "A simple boilerplate setup for MVC php",
+    "authors": [
+        {
+            "name": "zaidbari",
+            "email": "zaidbari9@hotmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "app\\": "./"
+        }
+    },
+    "require": {}
+}
