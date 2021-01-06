@@ -1,6 +1,5 @@
 <?php namespace app\core;
 
-
 class Router
 {
 
@@ -14,7 +13,7 @@ class Router
 	 * @param Request  $request
 	 * @param Response $response
 	 */
-	public function __construct( Request $request, Response $response)
+	public function __construct( Request $request, Response $response )
 	{
 		$this->request = $request;
 		$this->response = $response;
@@ -25,8 +24,14 @@ class Router
 	 * @param $path
 	 * @param $callback
 	 */
-	public function get( $path, $callback) {
-		$this->routes['get'][$path] = $callback;
+	public function get( $path, $callback )
+	{
+		$this->routes['get'][ $path ] = $callback;
+	}
+
+	public function post( $path, $callback )
+	{
+		$this->routes['post'][ $path ] = $callback;
 	}
 
 	/**
@@ -35,29 +40,40 @@ class Router
 	public function resolve()
 	{
 		$path = $this->request->getPath();
-		$method = $this->request->getMethod();
+		$method = $this->request->method();
 
-		$callback = $this->routes[$method][$path] ?? false;
-		if(!$callback) {
+		$callback = $this->routes[ $method ][ $path ] ?? false;
+		if ( !$callback ) {
 			$this->response->setStatusCode(404);
-			return "Not Found";
+			return $this->renderView('pages/_404');
 		}
-        if(is_string($callback)) {
+		if ( is_string($callback) ) {
 			return $this->renderView($callback);
-        }
-		return call_user_func($callback);
+		}
+		if ( is_array($callback) ) {
+			App::$app->controller = new $callback[0]();
+			$callback[0] = App::$app->controller;
+		}
+		return call_user_func($callback, $this->request, $this->response);
 	}
 
 	/**
-	 * @param $view
+	 * @param string $view
+	 * @param array  $params
 	 *
 	 * @return string|string[]
 	 */
-	public function renderView($view)
+	public function renderView( string $view, array $params = [] )
 	{
 		$layout = $this->layout();
-		$viewContent = $this->renderOnlyView($view);
+		$viewContent = $this->renderOnlyView($view, $params);
 		return str_replace('{{content}}', $viewContent, $layout);
+	}
+
+	public function renderContent( $view )
+	{
+		$layout = $this->layout();
+		return str_replace('{{content}}', $view, $layout);
 	}
 
 	/**
@@ -65,20 +81,26 @@ class Router
 	 */
 	protected function layout()
 	{
+		$layout = App::$app->controller->layout;
+
 		ob_start();
-		include_once App::$ROOT_DIR . "/views/layouts/main.php";
+		include_once App::$ROOT_DIR . "/views/layouts/$layout/index.php";
 		return ob_get_clean();
 	}
 
 	/**
-	 * @param $view
+	 * @param string $view
+	 * @param array  $params
 	 *
 	 * @return false|string
 	 */
-	protected function renderOnlyView($view)
+	protected function renderOnlyView( string $view, array $params )
 	{
+		foreach ( $params as $key => $value ) $$key = $value;
 		ob_start();
 		include_once App::$ROOT_DIR . "/views/$view.php";
 		return ob_get_clean();
 	}
+
+
 }
