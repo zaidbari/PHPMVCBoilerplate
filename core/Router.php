@@ -1,5 +1,7 @@
 <?php namespace app\core;
 
+use app\core\exception\NotFoundException;
+
 class Router
 {
 
@@ -36,6 +38,7 @@ class Router
 
 	/**
 	 * @return false|mixed|string|string[]
+	 * @throws NotFoundException
 	 */
 	public function resolve()
 	{
@@ -44,63 +47,23 @@ class Router
 
 		$callback = $this->routes[ $method ][ $path ] ?? false;
 		if ( !$callback ) {
-			$this->response->setStatusCode(404);
-			return $this->renderView('pages/_404');
+
+			throw new NotFoundException();
 		}
 		if ( is_string($callback) ) {
-			return $this->renderView($callback);
+			return App::$app->view->renderView($callback);
 		}
 		if ( is_array($callback) ) {
-			App::$app->controller = new $callback[0]();
-			$callback[0] = App::$app->controller;
+			/** @var  Controller $controller */
+			$controller = new $callback[0]();
+			App::$app->controller = $controller;
+			$controller->action = $callback[1];
+			$callback[0] = $controller;
+
+			foreach ( $controller->getMiddlewares() as $middleware ) $middleware->execute();
 		}
+
 		return call_user_func($callback, $this->request, $this->response);
 	}
-
-	/**
-	 * @param string $view
-	 * @param array  $params
-	 *
-	 * @return string|string[]
-	 */
-	public function renderView( string $view, array $params = [] )
-	{
-		$layout = $this->layout();
-		$viewContent = $this->renderOnlyView($view, $params);
-		return str_replace('{{content}}', $viewContent, $layout);
-	}
-
-	public function renderContent( $view )
-	{
-		$layout = $this->layout();
-		return str_replace('{{content}}', $view, $layout);
-	}
-
-	/**
-	 * @return false|string
-	 */
-	protected function layout()
-	{
-		$layout = App::$app->controller->layout;
-
-		ob_start();
-		include_once App::$ROOT_DIR . "/views/layouts/$layout/index.php";
-		return ob_get_clean();
-	}
-
-	/**
-	 * @param string $view
-	 * @param array  $params
-	 *
-	 * @return false|string
-	 */
-	protected function renderOnlyView( string $view, array $params )
-	{
-		foreach ( $params as $key => $value ) $$key = $value;
-		ob_start();
-		include_once App::$ROOT_DIR . "/views/$view.php";
-		return ob_get_clean();
-	}
-
 
 }

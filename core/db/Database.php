@@ -1,4 +1,6 @@
-<?php namespace app\core;
+<?php namespace app\core\db;
+
+use app\core\App;
 
 class Database
 {

@@ -12,12 +12,21 @@
 				<li class="nav-item">
 					<a class="nav-link" href="/contact">Contact</a>
 				</li>
+				<?php if(\app\core\App::isGuest()): ?>
 				<li class="nav-item">
 					<a class="nav-link" href="/login">Login</a>
 				</li>
 				<li class="nav-item">
 					<a class="nav-link" href="/register">Register</a>
 				</li>
+                <?php else: ?>
+                <li class="nav-item">
+                    <a class="nav-link" href="/profile">Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/logout"><?= \app\core\App::$app->user->getDisplayName(); ?> (logout)</a>
+                </li>
+                <?php endif; ?>
 				<li class="nav-item dropdown">
 					<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
 						Dropdown

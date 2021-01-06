@@ -7,16 +7,11 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <!-- CSS only -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <title>PHPMVCBoilerplate</title>
+    <title><?= $this->title; ?></title>
 </head>
 <body>
-<?php include_once 'navbar.php'; ?>
-<pre>
 
-<?php
-var_dump(\app\core\App::$app->user);
-?>
-</pre>
+<?php include_once 'navbar.php'; ?>
 <?php if(\app\core\App::$app->session->getFlash('success')): ?>
     <div class="alert alert-primary" role="alert"><?= \app\core\App::$app->session->getFlash('success'); ?></div>
 <?php endif; ?>

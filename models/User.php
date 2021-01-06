@@ -1,8 +1,8 @@
 <?php namespace app\models;
 
-use app\core\DBModel;
+use app\core\UserModel;
 
-class User extends DBModel
+class User extends UserModel
 {
 	const STATUS_INACTIVE = 0;
 	const STATUS_ACTIVE = 1;
@@ -62,6 +62,11 @@ class User extends DBModel
 	public function attributes(): array
 	{
 		return ['first_name', 'middle_name', 'last_name', 'email', 'password', 'status'];
+	}
+
+	public function getDisplayName(): string
+	{
+		return $this->first_name. ' ' . $this->last_name;
 	}
 
 }

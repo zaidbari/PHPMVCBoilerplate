@@ -16,8 +16,13 @@ class Form
 		echo '</form>';
 	}
 
-	public function field( Model $model, $attr) : Field
+	public function input( Model $model, $attr) : InputField
 	{
-		return new Field($model, $attr);
+		return new InputField($model, $attr);
+	}
+
+	public function textarea( Model $model, $attr) : TextareaField
+	{
+		return new TextareaField($model, $attr);
 	}
 }

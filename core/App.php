@@ -1,15 +1,20 @@
 <?php namespace app\core;
 
+use app\core\db\Database;
+use app\core\db\DBModel;
+
 class App
 {
+	public string $layout = 'guest';
 	public string $userClass;
 	public Router $router;
 	public Request $request;
 	public Response $response;
 	public Database $db;
 	public Session $session;
-	public Controller $controller;
-	public ?DBModel $user;
+	public ?Controller $controller = null;
+	public ?UserModel $user;
+	public View $view;
 
 	public static App $app;
 	public static string $ROOT_DIR;
@@ -30,6 +35,7 @@ class App
 		$this->response = new Response();
 		$this->router = new Router($this->request, $this->response);
 		$this->db = new Database($config['db']);
+		$this->view = new View();
 
 		$primaryValue = $this->session->get('user');
 		if($primaryValue) {
@@ -39,7 +45,14 @@ class App
 	}
 
 	public function run() {
-		echo $this->router->resolve();
+		try {
+			echo $this->router->resolve();
+		} catch (\Exception $e) {
+			$this->response->setStatusCode($e->getCode());
+			echo $this->view->renderView('pages/_error', [
+				'exception' => $e
+			]);
+		}
 	}
 
 	/**
@@ -58,7 +71,7 @@ class App
 		$this->controller = $controller;
 	}
 
-	public function login( DBModel $user)
+	public function login( UserModel $user) : bool
 	{
 		$this->user = $user;
 		$primaryKey = $user->primaryKey();
@@ -71,5 +84,10 @@ class App
 	{
 		$this->user = null;
 		$this->session->remove('user');
+	}
+
+	public static function isGuest() : bool
+	{
+		return !self::$app->user;
 	}
 }
